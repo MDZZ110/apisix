@@ -271,6 +271,7 @@ nginx_config:                     # config for render the template to generate n
       ext-plugin: 1m
       kubernetes: 1m
       tars: 1m
+      plugin-qingcloud-redis-cluster-slot-lock: 1m
 
 etcd:
   host:                           # it's possible to define multiple etcd hosts addresses of the same etcd cluster.
@@ -292,6 +293,29 @@ etcd:
     verify: true                  # whether to verify the etcd endpoint certificate when setup a TLS connection to etcd,
                                   # the default value is true, e.g. the certificate will be verified strictly.
     #sni:                         # the SNI for etcd TLS requests. If missed, the host part of the URL will be used.
+
+redis:
+  name: "account-redis"
+  enable_host: true
+  serv_list:
+    - ip: "192.168.100.2"
+      port: 6379
+    - ip: "192.168.100.3"
+      port: 6379
+    - ip: "192.168.100.4"
+      port: 6379
+    - ip: "192.168.100.5"
+      port: 6379
+    - ip: "192.168.100.6"
+      port: 6379
+    - ip: "192.168.100.7"
+      port: 6379
+  auth: bitnami
+  keepalive_timeout: 60000
+  keepalive_cons: 1000
+  connect_timeout: 5
+  max_redirection: 5
+  max_connection_attempts: 1
 
 # HashiCorp Vault storage backend for sensitive data retrieval. The config shows an example of what APISIX expects if you
 # wish to integrate Vault for secret (sensetive string, public private keys etc.) retrieval. APISIX communicates with Vault
@@ -355,6 +379,7 @@ plugins:                          # plugin list (sorted by priority)
   - hmac-auth                      # priority: 2530
   - basic-auth                     # priority: 2520
   - jwt-auth                       # priority: 2510
+  - qingcloud-auth                 # priority: 2505
   - key-auth                       # priority: 2500
   - consumer-restriction           # priority: 2400
   - forward-auth                   # priority: 2002

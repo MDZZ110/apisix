@@ -109,6 +109,12 @@ local desc_def = {
     maxLength = 256,
 }
 
+local user_id_def = {
+    type = "string",
+    maxLength = 256,
+    minLength = 1,
+}
+
 
 local timeout_def = {
     type = "object",
@@ -716,6 +722,31 @@ _M.consumer = {
 
 
 _M.upstream = upstream_schema
+
+_M.api_key = {
+    type = "object",
+    properties = {
+        user_id = {
+            type = "string",
+            maxLength = 256,
+            minLength = 1,
+        },
+        api_id = {
+            type = "string",
+            maxLength = 256,
+            minLength = 1,
+        },
+        count = {
+            type = "integer",
+            minimum = 0,
+        },
+        api_key = {
+            type = "string",
+            maxLength = 256,
+            minLength = 1,
+        }
+    }
+}
 
 
 _M.ssl = {

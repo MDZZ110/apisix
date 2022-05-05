@@ -24,7 +24,7 @@ github:
       - nginx
       - lua
       - luajit
-      - apigateway
+      - gateway
       - microservices
       - api
       - loadbalancing
