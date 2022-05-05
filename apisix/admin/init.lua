@@ -53,6 +53,7 @@ local resources = {
     stream_routes   = require("apisix.admin.stream_routes"),
     plugin_metadata = require("apisix.admin.plugin_metadata"),
     plugin_configs  = require("apisix.admin.plugin_config"),
+    api_keys        = require("apisix.admin.api_keys"),
 }
 
 
