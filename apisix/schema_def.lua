@@ -720,11 +720,6 @@ _M.api_key = {
             maxLength = 256,
             minLength = 1,
         },
-        api_id = {
-            type = "string",
-            maxLength = 256,
-            minLength = 1,
-        },
         count = {
             type = "integer",
             minimum = 0,

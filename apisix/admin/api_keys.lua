@@ -25,64 +25,6 @@ local function check_conf(user_id, conf)
     return user_id
 end
 
--- add api_id in account
-function _M.post(id, conf)
-    -- validate and get input api_id
-    local user_id, err = check_conf(id, conf)
-    if not user_id then
-        return 400, err
-    end
-
-    -- form etcd key
-    local key = "/api_keys/" .. user_id
-
-    -- get etcd storage
-    local previous_map
-    local res, err = core.etcd.get(key)
-    if not res then
-        core.log.error("get etcd result failed")
-        return 500, { error_msg = err }
-    end
-
-    -- parse etcd return
-    -- case empty key
-    if res.status == 404 then
-        core.log.error("empty previous map")
-        return res.status, res.body
-    end
-
-    -- case success, get previous map
-    if res.status == 200 then
-        -- previous map illegal
-        if not res.body.node.value or type(res.body.node.value) ~= "table" then
-            core.log.error("previous map illegal")
-            return 500, { error_msg = "previous map illegal" }
-        end
-        previous_map = res.body.node.value
-    end
-
-    if not previous_map.api_ids then
-        previous_map.api_ids = { conf.api_id }
-    else
-        -- case api_id already exists
-        for _, api_id in ipairs(previous_map.api_ids) do
-            if api_id == conf.api_id then
-                local err_msg = "api_id[" .. conf.api_id .. "] already bind with user_id[" .. user_id .. "]"
-                core.log.error(err_msg)
-                return 500, { error_msg = err_msg }
-            end
-        end
-
-        -- set value
-        table.insert(previous_map.api_ids, conf.api_id)
-    end
-
-    -- call etcd storage
-    local res, _ = core.etcd.set(key, previous_map)
-
-    return res.status, res.body
-end
-
 -- get api_key
 function _M.get(user_id)
     if not user_id then
@@ -128,15 +70,10 @@ function _M.put(user_id, conf)
     local user_map = {
         user_id = user_id,
         api_key = conf.api_key,
-        api_ids = {},
     }
 
     -- form etcd key
     local key = "/api_keys/" .. user_id
-    local res, _ = core.etcd.get(key)
-    if res.status ~= 404 and res.body.node.value then
-        user_map.api_ids = res.body.node.value.api_ids
-    end
 
     -- call redis storage
     -- case count = 0, develope account
@@ -165,17 +102,9 @@ function _M.put(user_id, conf)
 end
 
 
-function _M.delete(id)
-    -- check id format, {user_id}.{api_id} is required
-    if not id then
-        return 400, { error_msg = "missing id" }
-    end
-    local id_segs = ngx_re.split(id, "\\.")
-    local api_id, user_id = id_segs[2], id_segs[1]
-    if not api_id or not user_id then
-        local err_msg = "invalid id parameter pattern, '{user_id}.{api_id}' is required"
-        core.log.error(err_msg)
-        return 500, { error_msg = err_msg }
+function _M.delete(user_id)
+    if not user_id or user_id == "" then
+        return 400, { error_msg = "missing user_id" }
     end
 
     -- get etcd storage
@@ -192,33 +121,10 @@ function _M.delete(id)
         return res.status, res.body
     end
 
-    -- case previous map illegal
-    if not res.body.node.value or type(res.body.node.value) ~= "table" then
-        core.log.error("previous map illegal")
-        return 500, { error_msg = "previous map illegal" }
-    end
-    local previous_map = res.body.node.value
-
-    -- delete target api_id
-    local flag = false
-    for index, cur_api_id in ipairs(previous_map.api_ids) do
-        if api_id == cur_api_id then
-            table.remove(previous_map.api_ids, index)
-            flag = true
-            break
-        end
-    end
-
-    -- case api_id is not bind with user
-    if not flag then
-        local err_msg = "api_id[" .. api_id .. "] does not exist in api_key[" .. user_id .. "]"
-        core.log.error(err_msg)
-        return 500, { error_msg = err_msg }
-    end
-
     -- call etcd storage
-    local res, _ = core.etcd.set(key, previous_map)
+    local res, _ = core.etcd.delete(key)
     return res.status, res.body
 end
+
 
 return _M

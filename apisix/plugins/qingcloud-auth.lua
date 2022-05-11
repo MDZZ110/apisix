@@ -6,10 +6,6 @@ local api_keys_lrucache = core.lrucache.new({
 })
 local schema = {
     type = "object",
-    properties = {
-        api_id = { type = "string" }
-    },
-    required = { "api_id" }
 }
 
 
@@ -43,13 +39,8 @@ function _M.check_schema(conf)
 end
 
 function _M.rewrite(conf, ctx)
-    local api_id = conf.api_id
-
-    -- get apikey in header
-    local key = core.request.header(ctx, "apikey")
-    if not key then
-        return 401, { message = "Missing API key found in request" }
-    end
+    local key = core.request.get_host(ctx)
+    core.log.warn("get_host "..key)
 
     -- get config in cache
     local api_key_conf = api_key.plugin(plugin_name)
@@ -65,31 +56,19 @@ function _M.rewrite(conf, ctx)
     -- check key
     local api_key_set = api_keys[key]
     if not api_key_set or type(api_key_set) ~= "table" then
-        return 401, { message = "Invalid API key" }
+        return 401, { message = "Invalid API" }
     end
     local user_id = api_key_set.user_id
-    local flag = false
-    for _, id in ipairs(api_key_set.api_ids) do
-        if id == api_id then
-            flag = true
-            break
-        end
-    end
-    if not flag then
-        core.log.error("Invalid API key in request")
-        return 401, { message = "Invalid API key in request" }
-    end
 
     -- check account
     local count = api_key.get_count(user_id)
-    if not count or (count <= 0 and count ~= -65535) then
+    if not count or count <= 0 then
         core.log.error("insufficient balance")
         return 401, { message = "insufficient balance" }
     end
 
     ctx.api_key = key
     ctx.user_id = user_id
-    ctx.api_id = api_id
     ctx.api_ver = api_key_conf.conf_version
     core.log.info("hit key-auth rewrite")
 end
