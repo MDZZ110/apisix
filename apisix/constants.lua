@@ -31,6 +31,7 @@ return {
         ["/global_rules"] = true,
         ["/proto"] = true,
         ["/plugin_configs"] = true,
+        ["/api_keys"] = true,
     },
     STREAM_ETCD_DIRECTORY = {
         ["/upstreams"] = true,
