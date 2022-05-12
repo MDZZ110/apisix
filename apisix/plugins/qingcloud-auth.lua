@@ -82,11 +82,9 @@ function _M.header_filter(conf, ctx)
         ngx.timer.at(0, function()
             core.log.warn("after call, try to reduce the count for user "..user_id)
             local count = api_key.get_count(user_id)
-            if count ~= -65535 then
-                local _, err = api_key.count_decline_by(user_id, 1)
-                if err ~= nil then
-                    core.log.error("failed to charge account, err: ", err)
-                end
+            local _, err = api_key.count_decline_by(user_id, 1)
+            if err ~= nil then
+                core.log.error("failed to charge account, err: ", err)
             end
         end)
     end

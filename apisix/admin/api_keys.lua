@@ -78,7 +78,7 @@ function _M.put(user_id, conf)
     -- call redis storage
     -- case count = 0, develope account
     if conf.count == 0 then
-        local _, err = api_key.set_count(user_id, -65535)
+        local _, err = api_key.set_count(user_id, 0)
         if err ~= nil then
             core.log.error("failed to create develope account:", err)
             return 500, "failed to set develope account" .. err
