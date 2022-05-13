@@ -137,7 +137,6 @@ function _M.init_worker()
         automatic = true,
         item_schema = core.schema.api_key
     })
-    core.log.warn("after init_worker, api_keys: ", core.json.delay_encode(api_keys))
     if not api_keys then
         error("failed to create etcd instance for fetching api_keys: " .. err)
         return
