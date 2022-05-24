@@ -28,6 +28,11 @@ project_compose_ci     ?= ci/pod/docker-compose.yml
 project_release_name   ?= $(project_name)-$(VERSION)-src
 
 
+APISIX_VERSION ?= v2.13.1-alpine-v0.1.0
+IMAGE_NAME = dockerhub.dataomnis.local/dataomnis/apisix
+APISIX_IMAGE_TAG_NAME  ?= $(IMAGE_NAME):$(APISIX_VERSION)
+
+
 # Hyperconverged Infrastructure
 ENV_OS_NAME            ?= $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ENV_OS_ARCH            ?= $(shell uname -m | tr '[:upper:]' '[:lower:]')
@@ -457,4 +462,10 @@ ci-env-rebuild:
 ci-env-down:
 	@$(call func_echo_status, "$@ -> [ Start ]")
 	$(ENV_DOCKER_COMPOSE) down
+	@$(call func_echo_success_status, "$@ -> [ Done ]")
+
+.PHONY: build-on-alpine-local
+build-on-alpine-local:
+	@$(call func_echo_status, "$@ -> [ Start ]")
+	$(ENV_DOCKER) build -t $(APISIX_IMAGE_TAG_NAME) -f ./Dockerfile .
 	@$(call func_echo_success_status, "$@ -> [ Done ]")
